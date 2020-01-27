@@ -144,7 +144,7 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
   }
 
   @override
-  ImageStreamCompleter load(AdvancedNetworkImage key) {
+  ImageStreamCompleter load(AdvancedNetworkImage key, DecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(key),
       scale: key.scale,
@@ -155,7 +155,7 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
     );
   }
 
-  Future<ui.Codec> _loadAsync(AdvancedNetworkImage key) async {
+  Future<ui.Codec> _loadAsync(AdvancedNetworkImage key, DecoderCallback decode) async {
     assert(key == this);
 
     String uId = uid(key.url);
@@ -167,9 +167,7 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
           if (key.postProcessing != null)
             _diskCache = (await key.postProcessing(_diskCache)) ?? _diskCache;
           if (key.loadedCallback != null) key.loadedCallback();
-          return await PaintingBinding.instance
-              .instantiateImageCodec(_diskCache);
-        }
+          return await decode(_diskCache, cacheWidth: key.width, cacheHeight: key.height);
       } catch (e) {
         if (key.printError) debugPrint(e.toString());
       }
@@ -189,19 +187,17 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
         if (key.postProcessing != null)
           imageData = (await key.postProcessing(imageData)) ?? imageData;
         if (key.loadedCallback != null) key.loadedCallback();
-        return await PaintingBinding.instance.instantiateImageCodec(imageData);
+        return await decode(imageData,cacheWidth: key.width, cacheHeight: key.height)
       }
     }
 
     if (key.loadFailedCallback != null) key.loadFailedCallback();
     if (key.fallbackAssetImage != null) {
       ByteData imageData = await rootBundle.load(key.fallbackAssetImage);
-      return await PaintingBinding.instance
-          .instantiateImageCodec(imageData.buffer.asUint8List());
+      return await decode(imageData.buffer.asUint8List(), cacheWidth: key.width, cacheHeight: key.height)
     }
     if (key.fallbackImage != null)
-      return await PaintingBinding.instance
-          .instantiateImageCodec(key.fallbackImage);
+      return await decode(key.fallbackImage, cacheWidth: key.width, cacheHeight: key.height)
 
     return Future.error(StateError('Failed to load $url.'));
   }
