@@ -18,6 +18,8 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
   AdvancedNetworkImage(
     this.url, {
     this.scale: 1.0,
+    this.width,
+    this.height,
     this.header,
     this.useDiskCache: false,
     this.retryLimit: 5,
@@ -52,6 +54,9 @@ class AdvancedNetworkImage extends ImageProvider<AdvancedNetworkImage> {
 
   /// The scale to place in the [ImageInfo] object of the image.
   final double scale;
+  
+  final int height;
+  final int width;
 
   /// The HTTP headers that will be used with [http] to fetch image from network.
   final Map<String, String> header;
